@@ -1,15 +1,16 @@
 """Various class definitions for use in chesscog.py"""
 from enum import Enum, Flag
+from typing import Union
 
 import discord
 
 
 class Player(discord.User):
-    """The player object extends the default discord.User class to add additional attributes and methods for discord-chess."""
+    """The player object extends the default discord.User class to add additional attributes and methods for discord chess."""
 
     def __init__(self, *, user: discord.User, userdict: dict) -> None:
         """Initialise Player attributes: wins, losses, etc."""
-        # makeshift super()
+        # makeshift super() because we dont have the data object to call BaseUser.__init__ on
         self.name = user.name
         self.id = user.id
         self.discriminator = user.discriminator
@@ -20,12 +21,12 @@ class Player(discord.User):
         self._state = user._state
 
         # chess attributes
-        self.chesscolor: Color = None  # True is white (1), False is black (0)
-        self.mode: Mode = None  # Mode is an enum representing singleplayer, multiplayer and variant.
+        self.chesscolor: Union[Color, None] = None  # True is white (1), False is black (0)
+        self.mode: Union[Mode, None] = None  # Mode is an enum representing singleplayer, multiplayer and variant.
         # self.forfeited: bool = False  # Deprecated attribute for forfeit, replaced with Mode.NULL
-        self.opponent: Player = None
+        self.opponent: Union[Player, None] = None
 
-        # states attributes
+        # states attributes (epic hardcoding moment)
         self.wins: int = userdict[str(self.id)]["wins"]
         self.losses: int = userdict[str(self.id)]["losses"]
         self.draws: int = userdict[str(self.id)]["draws"]

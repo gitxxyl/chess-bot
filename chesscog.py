@@ -170,12 +170,12 @@ class Chess(commands.Cog):
                               skill: int, timelimit: int = 0.5, ) -> None:
         """Main singleplayer gameplay loop."""
 
-        temp: Any = None  # dummy variable to process unpack here
+        _temp: Any = None  # dummy variable to process unpack here
 
         if player.chesscolor == Color.WHITE:  # if player is white
             await ctx.send(file=await self.send_svg(board, player),
                            content=f"`{ctx.guild.get_member(player.id).display_name}`, it's your turn; you have 60s!")
-            board, player, temp = await self.player_move(ctx, board, player)  # player moves first
+            board, player, _temp = await self.player_move(ctx, board, player)  # player moves first
 
         while player.mode == Mode.SINGLE and board.outcome() is None:
             board, player = await self.engine_move(ctx, board, engine, timelimit,
@@ -184,26 +184,29 @@ class Chess(commands.Cog):
                 break
             await ctx.send(file=await self.send_svg(board, player),
                            content=f"`{ctx.guild.get_member(player.id).display_name}`, it's your turn; you have 60s!")
-            board, player, temp = await self.player_move(ctx, board, player)  # player always follows engine
+            board, player, _temp = await self.player_move(ctx, board, player)  # player always follows engine
 
         if board.outcome() is not None:  # game has ended by chess.Termination
             if board.outcome().winner is None:  # draw
-                await ctx.send(f"Game over! The game was drawn by {board.outcome().termination.name}", file=await self.send_svg(board, player))
+                await ctx.send(f"Game over! The game was drawn by {board.outcome().termination.name}",
+                               file=await self.send_svg(board, player))
                 player.draws += 1
                 player.mode = Mode.NULL
 
             elif board.outcome().winner == player.chesscolor.value:  # player won
-                await ctx.send(f"Game over! {player.mention} won by {board.outcome().termination.name}!", file=await self.send_svg(board, player))
+                await ctx.send(f"Game over! {player.mention} won by {board.outcome().termination.name}!",
+                               file=await self.send_svg(board, player))
                 player.wins += 1
                 player.stockfish = max(player.stockfish, skill)
                 player.mode = Mode.NULL  # player is not in a game anymore
 
             else:  # player lost
-                await ctx.send(f"Game over! `Stockfish` won by {board.outcome().termination.name}!", file=await self.send_svg(board, player))
+                await ctx.send(f"Game over! `Stockfish` won by {board.outcome().termination.name}!",
+                               file=await self.send_svg(board, player))
                 player.losses += 1
                 player.mode = Mode.NULL
 
-            othercog.Other.save([player]) # update stats file
+            othercog.Other.save([player])  # update stats file
 
     async def init_multi(self, ctx, player_list: list) -> None:
         """Initialise multiplayer game - create board, players."""
@@ -268,7 +271,6 @@ class Chess(commands.Cog):
         await ctx.send("The computer is thinking... :thinking:")
         board.push(engine.play(board, chess.engine.Limit(
             time=timelimit)).move)  # get engine move based on board, limit from param
-
 
         return board, player
 
@@ -375,7 +377,7 @@ class Chess(commands.Cog):
 
         # Reaction checker
         def check(r, a):
-            return str(r.emoji) in reaction_list  # only respond to emojis in the reaction list
+            return str(r.emoji) in reaction_list and not a.bot  # only respond to emojis in the reaction list
 
         msg = await ctx.send(
             "React to this message with <:chess_queen:849232889697796116> to join the game, or :x: to cancel!")

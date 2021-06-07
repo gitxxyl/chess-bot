@@ -7,6 +7,7 @@ from discord.ext import commands
 # custom classes
 import config
 
+
 class Other(commands.Cog):
     """Miscellaneous commands for chess bot"""
 
@@ -16,12 +17,14 @@ class Other(commands.Cog):
 
     @commands.command()
     async def stats(self, ctx, user: discord.User = None):
+        """Bot command to send embed of player stats."""
         player = config.playerlist[
             str(user.id) if user else str(ctx.author.id)]  # get player; param if specified, defaults to author
         await ctx.send(embed=player.getstats())  # call Player.getstats() on player; sends returned embed
 
     @stats.error
     async def stats_error(self, ctx, error):  # catch errors thrown in self.stats()
+        """Handle UserNotFound error"""
         if isinstance(error, commands.UserNotFound):  # invalid input: user not found
             await ctx.send("Invalid user!")
         else:
@@ -30,6 +33,7 @@ class Other(commands.Cog):
 
     @classmethod
     def save(cls, playerlist: list) -> None:
+        """Save current playerlist as a json to stats.json - called at every game end."""
         dictt = config.playerlist  # global playerlist
         for i in playerlist:
             dictt[str(i.id)] = i  # updates global playerlist
@@ -39,13 +43,14 @@ class Other(commands.Cog):
 
     @commands.command(name="save")
     async def botsave(self, ctx):
+        """Bot command to save playerlist as a json to stats.json immediately."""
         dictt = config.playerlist  # global playerlist
         self.jsonupdate(dictt)  # sync method
         await ctx.send("Saved!")
 
     @classmethod
     def jsonupdate(cls, dictt: dict):
-        """updates the stats.json file"""
+        """Updates the stats.json file through some epic hardcoding"""
         jsondict = {}
         for d in dictt:
             i = dictt.get(d)
@@ -62,4 +67,3 @@ class Other(commands.Cog):
 
         with open("stats.json", "w") as f:
             json.dump(jsondict, f)
-
