@@ -16,14 +16,14 @@ class Other(commands.Cog):
     #     self.bot = bot
 
     @commands.command()
-    async def stats(self, ctx, user: discord.User = None):
+    async def stats(self, ctx, user: discord.User = None) -> None:
         """Bot command to send embed of player stats."""
         player = config.playerlist[
             str(user.id) if user else str(ctx.author.id)]  # get player; param if specified, defaults to author
         await ctx.send(embed=player.getstats())  # call Player.getstats() on player; sends returned embed
 
     @stats.error
-    async def stats_error(self, ctx, error):  # catch errors thrown in self.stats()
+    async def stats_error(self, ctx, error) -> None:  # catch errors thrown in self.stats()
         """Handle UserNotFound error"""
         if isinstance(error, commands.UserNotFound):  # invalid input: user not found
             await ctx.send("Invalid user!")
@@ -42,14 +42,14 @@ class Other(commands.Cog):
         cls.jsonupdate(dictt)  # update stats.json
 
     @commands.command(name="save")
-    async def botsave(self, ctx):
+    async def botsave(self, ctx) -> None:
         """Bot command to save playerlist as a json to stats.json immediately."""
         dictt = config.playerlist  # global playerlist
         self.jsonupdate(dictt)  # sync method
         await ctx.send("Saved!")
 
     @classmethod
-    def jsonupdate(cls, dictt: dict):
+    def jsonupdate(cls, dictt: dict) -> None:
         """Updates the stats.json file through some epic hardcoding"""
         jsondict = {}
         for d in dictt:

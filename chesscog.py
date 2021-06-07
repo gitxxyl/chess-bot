@@ -230,7 +230,7 @@ class Chess(commands.Cog):
         await self.gameplay_multi(ctx, player_list, board)
 
     # TODO: Test & Fix multiplayer
-    async def gameplay_multi(self, ctx, player_list: list, board: chess.Board):
+    async def gameplay_multi(self, ctx, player_list: list, board: chess.Board) -> None:
         """Main gameplay loop for multiplayer."""
 
         # reassign player objects to variables with color names (for convenience)
@@ -267,15 +267,14 @@ class Chess(commands.Cog):
             # save stats
             othercog.Other.save(player_list)
 
-    async def engine_move(self, ctx, board, engine, timelimit, player):
+    async def engine_move(self, ctx, board, engine, timelimit, player) -> tuple[chess.Board, Player]:
         await ctx.send("The computer is thinking... :thinking:")
         board.push(engine.play(board, chess.engine.Limit(
             time=timelimit)).move)  # get engine move based on board, limit from param
 
         return board, player
 
-    async def player_move(self, ctx, board: chess.Board, player: Player, player_list: list = None) -> (
-            chess.Board, Player, dict):
+    async def player_move(self, ctx, board: chess.Board, player: Player, player_list: list = None) -> tuple[chess.Board, Player, list]:
         """Get player move and add it to the move stack. Non mode-dependant"""
         global status
 
