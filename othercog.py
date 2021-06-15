@@ -18,6 +18,7 @@ class Other(commands.Cog):
     @commands.command()
     async def stats(self, ctx, user: discord.User = None) -> None:
         """Bot command to send embed of player stats."""
+        print()
         player = config.playerlist[
             str(user.id) if user else str(ctx.author.id)]  # get player; param if specified, defaults to author
         await ctx.send(embed=player.getstats())  # call Player.getstats() on player; sends returned embed

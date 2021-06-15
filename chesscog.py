@@ -5,13 +5,15 @@ import json
 import random
 from io import BytesIO
 # external classes
-from typing import Any, Union
+from typing import Any
+
 import chess
 import chess.engine
 import chess.svg
 import numpy as np
 from cairosvg import svg2png
 from discord.ext import commands
+
 # custom classes
 import config
 import othercog
@@ -45,6 +47,8 @@ class Chess(commands.Cog):
             playerlist[str(player.id)] = player
             print(player.id, player)
         config.playerlist = playerlist
+        ch = self.bot.get_channel(849485786571210782)
+        await ch.send("Chess bot is now online!")
 
     @commands.Cog.listener()
     async def on_message(self, msg) -> None:  # to listen for illegal moves
@@ -96,7 +100,7 @@ class Chess(commands.Cog):
                 print(e)
                 return
 
-    @commands.command(aliases=["resign", "giveup", "lose"])
+    @commands.command(aliases=["resign", "giveup", "lose", "surrender"])
     async def forfeit(self, ctx) -> None:
         """Immediately end the game with a loss."""
         global status
@@ -169,7 +173,7 @@ class Chess(commands.Cog):
     async def gameplay_single(self, ctx, player: Player, board: chess.Board, engine: chess.engine.SimpleEngine,
                               skill: int, timelimit: int = 0.5, ) -> None:
         """Main singleplayer gameplay loop."""
-
+        global status
         _temp: Any = None  # dummy variable to process unpack here
 
         if player.chesscolor == Color.WHITE:  # if player is white
@@ -205,7 +209,7 @@ class Chess(commands.Cog):
                                file=await self.send_svg(board, player))
                 player.losses += 1
                 player.mode = Mode.NULL
-
+            status = Status.NULL
             othercog.Other.save([player])  # update stats file
 
     async def init_multi(self, ctx, player_list: list) -> None:
@@ -232,7 +236,7 @@ class Chess(commands.Cog):
     # TODO: Test & Fix multiplayer
     async def gameplay_multi(self, ctx, player_list: list, board: chess.Board) -> None:
         """Main gameplay loop for multiplayer."""
-
+        global status
         # reassign player objects to variables with color names (for convenience)
         white: Player = player_list[0]
         black: Player = player_list[1]
@@ -266,6 +270,7 @@ class Chess(commands.Cog):
 
             # save stats
             othercog.Other.save(player_list)
+        status = Status.NULL
 
     async def engine_move(self, ctx, board, engine, timelimit, player) -> tuple[chess.Board, Player]:
         await ctx.send("The computer is thinking... :thinking:")
@@ -274,7 +279,8 @@ class Chess(commands.Cog):
 
         return board, player
 
-    async def player_move(self, ctx, board: chess.Board, player: Player, player_list: list = None) -> tuple[chess.Board, Player, list]:
+    async def player_move(self, ctx, board: chess.Board, player: Player, player_list: list = None) -> tuple[
+        chess.Board, Player, list]:
         """Get player move and add it to the move stack. Non mode-dependant"""
         global status
 
